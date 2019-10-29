@@ -1,0 +1,105 @@
+---
+title: "Final Project"
+author: "Miroslav Bergam"
+date: "10/29/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE, messages = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r cars}
+
+data <- read_csv("schedule_a-2019-10-29T12_07_33.csv") %>%
+  select(committee_name, contributor_name, 
+         contributor_employer, 
+         contributor_occupation, 
+         contributor_first_name, 
+         contributor_last_name, 
+         contribution_receipt_amount, 
+         contribution_receipt_date) %>%
+  filter(committee_name != "WELD 2020 PRESIDENTIAL CAMPAIGN COMMITTEE, INC.")
+  
+
+ggplot(data, aes(x = committee_name, fill = committee_name)) +
+  geom_bar() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  theme(legend.position = "none")
+
+```
+
+```{r Unique Donors}
+
+num_donors <- data %>%
+  group_by(committee_name, contributor_name) %>%
+  slice(1) %>%
+  ungroup() %>%
+  group_by(committee_name) %>%
+  summarise(num_donors = n())
+
+ggplot(num_donors, aes(x = committee_name, y = num_donors, fill = committee_name)) +
+  geom_col() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  theme(legend.position = "none")
+
+```
+
+```{r Amount Donated}
+
+amount_graph <- data %>%
+  group_by(committee_name) %>%
+  summarise(total_donations = sum(contribution_receipt_amount)) %>%
+  mutate(total_donations = as.numeric(total_donations))
+
+ggplot(amount_graph, aes(x = committee_name, y = total_donations, fill = committee_name)) +
+  geom_col() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  theme(legend.position = "none")
+
+```
+
+```{r By Employer}
+
+by_employer <- data %>%
+  filter(contributor_employer == "HARVARD UNIVERSITY" |  
+           contributor_employer == "HARVARD"  | 
+           contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
+           contributor_employer == "HARVARD LAW SCHOOL" | 
+           contributor_employer == "HARVARD BUSINESS SCHOOL" | 
+           contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH") %>%
+  group_by(contributor_employer) %>%
+  summarise(total_donations = sum(contribution_receipt_amount)) %>%
+  mutate(total_donations = as.numeric(total_donations))
+
+ggplot(by_employer, aes(x = contributor_employer, y = total_donations, fill = contributor_employer)) +
+  geom_col() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  theme(legend.position = "none")
+
+```
+
+```{r}
+
+by_employer_facet <- data %>%
+  filter(contributor_employer == "HARVARD UNIVERSITY" |  
+           contributor_employer == "HARVARD"  | 
+           contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
+           contributor_employer == "HARVARD LAW SCHOOL" | 
+           contributor_employer == "HARVARD BUSINESS SCHOOL" | 
+           contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH") %>%
+  group_by(contributor_employer) %>%
+  summarise(total_donations = sum(contribution_receipt_amount)) %>%
+  mutate(total_donations = as.numeric(total_donations))
+
+
+ggplot(by_employer, aes(x = committee_name, y = total_donations, fill = committee_name)) +
+  geom_col() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  theme(legend.position = "none") + 
+  facet_wrap(~ contributor_employer)
+
+```
+
