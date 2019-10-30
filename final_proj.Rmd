@@ -21,13 +21,13 @@ data <- read_csv("schedule_a-2019-10-29T12_07_33.csv") %>%
          contributor_last_name, 
          contribution_receipt_amount, 
          contribution_receipt_date) %>%
-  filter(committee_name != "WELD 2020 PRESIDENTIAL CAMPAIGN COMMITTEE, INC.")
-  
+  filter(committee_name != "WELD 2020 PRESIDENTIAL CAMPAIGN COMMITTEE, INC.") 
 
 ggplot(data, aes(x = committee_name, fill = committee_name)) +
   geom_bar() + 
   theme(axis.text.x = element_text(angle = 90)) + 
-  theme(legend.position = "none")
+  theme(legend.position = "none") + 
+  coord_fixed(0.06)
 
 ```
 
@@ -89,14 +89,11 @@ by_employer_facet <- data %>%
            contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
            contributor_employer == "HARVARD LAW SCHOOL" | 
            contributor_employer == "HARVARD BUSINESS SCHOOL" | 
-           contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH") %>%
-  group_by(contributor_employer) %>%
-  summarise(total_donations = sum(contribution_receipt_amount)) %>%
-  mutate(total_donations = as.numeric(total_donations))
+           contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH")
 
 
-ggplot(by_employer, aes(x = committee_name, y = total_donations, fill = committee_name)) +
-  geom_col() + 
+ggplot(by_employer_facet, aes(x = committee_name, fill = committee_name)) +
+  geom_bar() + 
   theme(axis.text.x = element_text(angle = 90)) + 
   theme(legend.position = "none") + 
   facet_wrap(~ contributor_employer)
