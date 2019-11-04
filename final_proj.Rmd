@@ -5,13 +5,13 @@ date: "10/29/2019"
 output: html_document
 ---
 
-```{r setup, include=FALSE, messages = FALSE}
+```{r setup, include=FALSE, messages = FALSE, warnings = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(ggplot2)
 ```
 
-```{r}
+```{r Number of Donations}
 
 data <- read_csv("schedule_a-2019-10-29T12_07_33.csv") %>%
   select(committee_name, contributor_name, 
@@ -69,10 +69,14 @@ num_donors <- data %>%
   group_by(committee_name) %>%
   summarise(num_donors = n())
 
-ggplot(num_donors, aes(x = committee_name, y = num_donors, fill = committee_name)) +
+ggplot(num_donors, aes(x = reorder(committee_name, num_donors), y = num_donors, fill = committee_name)) +
   geom_col() + 
   theme(axis.text.x = element_text(angle = 90)) + 
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  labs(title = "Harvard Political Donors to 2020 Presidential Campaigns",
+       subtitle = "Individuals Employed by Harvard University",
+       x = "Presidential Campaigns",
+       y = "Number of Donors")
 
 ```
 
@@ -83,10 +87,32 @@ amount_graph <- data %>%
   summarise(total_donations = sum(contribution_receipt_amount)) %>%
   mutate(total_donations = as.numeric(total_donations))
 
-ggplot(amount_graph, aes(x = committee_name, y = total_donations, fill = committee_name)) +
+ggplot(amount_graph, aes(x = reorder(committee_name, total_donations), y = total_donations, fill = committee_name)) +
   geom_col() + 
   theme(axis.text.x = element_text(angle = 90)) + 
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  labs(title = "Harvard Employees' Total Donations to 2020 Presidential Campaigns",
+       subtitle = "Donations by Individuals Employed by Harvard University",
+       x = "Presidential Campaigns",
+       y = "Dollars")
+
+```
+
+```{r Mean Donation}
+
+amount_graph <- data %>%
+  group_by(committee_name) %>%
+  summarise(mean_donations = mean(contribution_receipt_amount)) %>%
+  mutate(mean_donations = as.numeric(mean_donations))
+
+ggplot(amount_graph, aes(x = reorder(committee_name, mean_donations), y = mean_donations, fill = committee_name)) +
+  geom_col() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  theme(legend.position = "none") +
+  labs(title = "Harvard Employees' Mean Donations to 2020 Presidential Campaigns",
+       subtitle = "Donations by Individuals Employed by Harvard University",
+       x = "Presidential Campaigns",
+       y = "Dollars")
 
 ```
 
