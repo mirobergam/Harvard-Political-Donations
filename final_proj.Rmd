@@ -11,7 +11,7 @@ library(tidyverse)
 library(ggplot2)
 ```
 
-```{r cars}
+```{r}
 
 data <- read_csv("schedule_a-2019-10-29T12_07_33.csv") %>%
   select(committee_name, contributor_name, 
@@ -21,13 +21,42 @@ data <- read_csv("schedule_a-2019-10-29T12_07_33.csv") %>%
          contributor_last_name, 
          contribution_receipt_amount, 
          contribution_receipt_date) %>%
-  filter(committee_name != "WELD 2020 PRESIDENTIAL CAMPAIGN COMMITTEE, INC.") 
+  filter(committee_name != "") %>%
+  filter(contributor_occupation != "STUDENT") %>%
+  filter(contributor_occupation != "GRADUATE STUDENT") %>%
+  mutate(committee_name=dplyr::recode(committee_name,
+                `AMY FOR AMERICA` = "Amy Klobuchar",
+                `BENNET FOR AMERICA` = "Michael Bennet",
+                `BERNIE 2020` = "Bernie Sanders",
+                `BETO FOR AMERICA` = "Beto O'Rourke",
+                `BIDEN FOR PRESIDENT` = "Joe Biden",
+                `BULLOCK FOR PRESIDENT` = "Steve Bullock",
+                `CORY 2020` = "Cory Booker",
+                `DONALD J. TRUMP FOR PRESIDENT, INC.` = "Donald Trump",
+                `FRIENDS OF ANDREW YANG` = "Andrew Yang",
+                `FRIENDS OF JOHN DELANEY` = "John Delaney",
+                `GILLIBRAND 2020` = "Kirstan Gillibrand",
+                `HICKENLOOPER 2020` = "John Hickenlooper",
+                `INSLEE FOR AMERICA` = "Jay Inslee",
+                `JULIAN FOR THE FUTURE` = "Julian Castro",
+                `KAMALA HARRIS FOR THE PEOPLE` = "Kamala Harris",
+                `PETE FOR AMERICA, INC.` = "Pete Buttigieg",
+                `SETH MOULTON FOR AMERICA, INC.` = "Seth Moulton",
+                `SWALWELL FOR AMERICA` = "Eric Swalwell",
+                `TOM STEYER 2020` = "Tom Steyer",
+                `TULSI NOW` = "Tulsi Gabbard",
+                `WARREN FOR PRESIDENT, INC.` = "Elizabeth Warren",
+                `WALSH FOR PRESIDENT` = "Joe Walsh",
+                `WELD 2020 PRESIDENTIAL CAMPAIGN COMMITTEE, INC.` = "Bill Weld"))
 
 ggplot(data, aes(x = committee_name, fill = committee_name)) +
   geom_bar() + 
   theme(axis.text.x = element_text(angle = 90)) + 
   theme(legend.position = "none") + 
-  coord_fixed(0.06)
+  labs(title = "Harvard Political Donations to 2020 Presidential Campaigns",
+       subtitle = "Donations of Individuals Employed by Harvard University",
+       x = "Presidential  Campaigns",
+       y = "Number of Individual Donations")
 
 ```
 
@@ -84,19 +113,35 @@ ggplot(by_employer, aes(x = contributor_employer, y = total_donations, fill = co
 ```{r}
 
 by_employer_facet <- data %>%
-  filter(contributor_employer == "HARVARD UNIVERSITY" |  
-           contributor_employer == "HARVARD"  | 
-           contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
+  filter(contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
            contributor_employer == "HARVARD LAW SCHOOL" | 
            contributor_employer == "HARVARD BUSINESS SCHOOL" | 
-           contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH")
+           contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH" |
+           contributor_employer == "HARVARD GRADUATE SCHOOL OF EDUCATION")
+
+employer_piechart <- by_employer_facet %>%
+  group_by(contributor_employer) %>%
+  summarise(num_donors = n()) 
+
+#ggplot(employer_piechart, aes(x = "",y = num_donors, fill = contributor_employer)) +
+#  geom_bar(stat="identity", width=1) + 
+#  coord_polar("y", start=0)
+
+#employer_piechart_money <- by_employer_facet %>%
+#  group_by(contributor_employer) %>%
+#  summarise(money = sum(contribution_receipt_amount)) %>%
+
+#ggplot(employer_piechart_money, aes(x = "", y = money, fill = contributor_employer)) +
+#  geom_bar(stat="identity", width=1) + 
+#  coord_polar("y", start=0)
 
 
 ggplot(by_employer_facet, aes(x = committee_name, fill = committee_name)) +
   geom_bar() + 
   theme(axis.text.x = element_text(angle = 90)) + 
   theme(legend.position = "none") + 
-  facet_wrap(~ contributor_employer)
+  facet_wrap(~ contributor_employer) #+ 
+  #coord_polar("y", start=0)
 
 ```
 
