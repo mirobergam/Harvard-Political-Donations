@@ -13,7 +13,7 @@ library(ggplot2)
 
 ```{r Number of Donations}
 
-data <- read_csv("schedule_a-2019-10-29T12_07_33.csv") %>%
+data <- read_csv("MOREDATA.csv") %>%
   select(committee_name, contributor_name, 
          contributor_employer, 
          contributor_occupation, 
@@ -24,6 +24,19 @@ data <- read_csv("schedule_a-2019-10-29T12_07_33.csv") %>%
   filter(committee_name != "") %>%
   filter(contributor_occupation != "STUDENT") %>%
   filter(contributor_occupation != "GRADUATE STUDENT") %>%
+  filter(contributor_employer != "HARVARD-WESTLAKE SCHOOL") %>%
+  filter(committee_name != "DEMOCRATS WORK FOR AMERICA, INC") %>%
+  filter(committee_name != "BLACK PAC") %>%
+  filter(committee_name != "FORWARD MAJORITY ACTION") %>%
+  filter(committee_name != "MIND THE GAP") %>%
+  filter(committee_name != "NEED TO IMPEACH") %>%
+  filter(committee_name != "UNITE AMERICA CONGRESSIONAL ELECTION FUND") %>%
+  filter(committee_name != "WYOMING STRONG ACTION") %>%
+  filter(committee_name != "LCV VICTORY FUND") %>%
+  filter(committee_name != "WITH HONOR FUND, INC.") %>%
+  filter(committee_name != "JOE SESTAK FOR PRESIDENT") %>%
+  filter(committee_name != "SMP") %>%
+  filter(committee_name != "HOUSE MAJORITY PAC") %>%
   mutate(committee_name=dplyr::recode(committee_name,
                 `AMY FOR AMERICA` = "Amy Klobuchar",
                 `BENNET FOR AMERICA` = "Michael Bennet",
@@ -49,8 +62,14 @@ data <- read_csv("schedule_a-2019-10-29T12_07_33.csv") %>%
                 `WALSH FOR PRESIDENT` = "Joe Walsh",
                 `WELD 2020 PRESIDENTIAL CAMPAIGN COMMITTEE, INC.` = "Bill Weld"))
 
-ggplot(data, aes(x = committee_name, fill = committee_name)) +
-  geom_bar() + 
+number_donations <- data %>%
+  group_by(committee_name) %>%
+  summarise(num_donations = n()) %>%
+  mutate(num_donations = as.numeric(num_donations))
+
+
+ggplot(number_donations, aes(x = reorder(committee_name, num_donations), y = num_donations, fill = committee_name)) +
+  geom_col() + 
   theme(axis.text.x = element_text(angle = 90)) + 
   theme(legend.position = "none") + 
   labs(title = "Harvard Political Donations to 2020 Presidential Campaigns",
@@ -119,21 +138,41 @@ ggplot(amount_graph, aes(x = reorder(committee_name, mean_donations), y = mean_d
 ```{r By Employer}
 
 by_employer <- data %>%
-  filter(contributor_employer == "HARVARD UNIVERSITY" |  
-           contributor_employer == "HARVARD"  | 
-           contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
+  filter(contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
            contributor_employer == "HARVARD LAW SCHOOL" | 
            contributor_employer == "HARVARD BUSINESS SCHOOL" | 
-           contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH") %>%
+           contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH" |
+           contributor_employer == "HARVARD GRADUATE SCHOOL OF ARTS AND SCIENCES" |
+           contributor_employer == "HARVARD GRADUATE SCHOOL OF EDUCATION" |
+           contributor_employer == "HARVARD DIVINITY SCHOOL")
+
+by_employer_sum <- by_employer %>%  
   group_by(contributor_employer) %>%
   summarise(total_donations = sum(contribution_receipt_amount)) %>%
   mutate(total_donations = as.numeric(total_donations))
 
-ggplot(by_employer, aes(x = contributor_employer, y = total_donations, fill = contributor_employer)) +
+ggplot(by_employer_sum, aes(x = reorder(contributor_employer, total_donations), y = total_donations, fill = contributor_employer)) +
   geom_col() + 
   theme(axis.text.x = element_text(angle = 90)) + 
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  labs(title = "Harvard Grad School Employees' Total Donations to 2020 Pres. Campaigns",
+       subtitle = "Donations by Individuals Employed by Graduate Schools",
+       x = "Graduate Schools",
+       y = "Dollars")
 
+by_employer_mean <- by_employer %>%  
+  group_by(contributor_employer) %>%
+  summarise(total_donations = mean(contribution_receipt_amount)) %>%
+  mutate(total_donations = as.numeric(total_donations))
+
+ggplot(by_employer_mean, aes(x = reorder(contributor_employer, total_donations), y = total_donations, fill = contributor_employer)) +
+  geom_col() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  theme(legend.position = "none") +
+  labs(title = "Harvard Grad School Employees' Mean Donations to 2020 Pres. Campaigns",
+       subtitle = "Donations by Individuals Employed by Graduate Schools",
+       x = "Graduate Schools",
+       y = "Dollars")
 ```
 
 ```{r}
@@ -144,6 +183,14 @@ by_employer_facet <- data %>%
            contributor_employer == "HARVARD BUSINESS SCHOOL" | 
            contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH" |
            contributor_employer == "HARVARD GRADUATE SCHOOL OF EDUCATION")
+
+ggplot(by_employer_facet, aes(x = committee_name, fill = committee_name)) +
+  geom_bar() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  theme(legend.position = "none") + 
+  facet_wrap(~ contributor_employer) +
+  labs(y = "Number of Donations",
+       x = "Candidate")
 
 employer_piechart <- by_employer_facet %>%
   group_by(contributor_employer) %>%
@@ -161,13 +208,6 @@ employer_piechart <- by_employer_facet %>%
 #  geom_bar(stat="identity", width=1) + 
 #  coord_polar("y", start=0)
 
-
-ggplot(by_employer_facet, aes(x = committee_name, fill = committee_name)) +
-  geom_bar() + 
-  theme(axis.text.x = element_text(angle = 90)) + 
-  theme(legend.position = "none") + 
-  facet_wrap(~ contributor_employer) #+ 
-  #coord_polar("y", start=0)
 
 ```
 
