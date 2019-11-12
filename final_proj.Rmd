@@ -10,6 +10,17 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(tidyverse)
 library(ggplot2)
 library(formattable)
+
+##  People who donated to more than one
+## PS8 data source
+
+## Ideology scores
+## Boxplots to show amounts 
+### Sankey chart: left hand side is schools,right hand side is candidates
+### something inferential // statistical modelling
+    # take the individual donations as  one datapoint,  and take amount as a function of ideology
+    # include polynomials to do curves  amt ~ ideology + ideology ^2... or add a cubed
+
 ```
 
 ```{r Data Cleaning}
@@ -99,6 +110,12 @@ pres <- read_csv("pres.csv") %>%
 data <- data %>%
   left_join(pres, by = c("committee_name" = "name"))
 
+ideologies <- read_csv("ideology_score.csv") %>%
+  select(Name, estimate)
+
+data <- data %>%
+  left_join(ideologies, by = c("committee_name" = "Name"))
+
 ```
 
 ```{r PROF ONLY}
@@ -183,9 +200,7 @@ ggplot(number_donations, aes(x = reorder(committee_name, num_donations), y = num
 ```{r Presidential Unique Donors}
 
 num_donors <- data %>%
-  group_by(committee_name, contributor_name) %>%
-  slice(1) %>%
-  ungroup() %>%
+  distinct(committee_name, contributor_name) %>%
   group_by(committee_name) %>%
   summarise(num_donors = n())
 
@@ -328,5 +343,21 @@ ggplot(party_support, aes(x="", y=num_party, fill=party_full))+
   
 
 ```
+
+```{r}
+
+lm(data = data, contribution_receipt_amount ~ estimate)
+
+ggplot(data, aes(x = estimate, y = contribution_receipt_amount))+
+  scale_y_log10()+
+  geom_jitter() + 
+  geom_smooth(method = "lm") +
+  labs(title = "Relationship Between Donation Size and Politican Ideology",
+      x = "Estimated Political Ideology",
+      y = "Donation Amount")
+
+```
+
+
 
 
