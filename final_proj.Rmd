@@ -105,7 +105,7 @@ pres <- read_csv("pres.csv") %>%
                 `WARREN, ELIZABETH` = "Elizabeth Warren",
                 `WALSH, JOE` = "Joe Walsh",
                 `WELD, WILLIAM FLOYD (BILL)` = "Bill Weld")) %>%
-  select(name, party_full)
+  select(name, party_full, receipts)
 
 data <- data %>%
   left_join(pres, by = c("committee_name" = "name"))
@@ -357,6 +357,36 @@ ggplot(data, aes(x = estimate, y = contribution_receipt_amount))+
       y = "Donation Amount")
 
 ```
+
+```{r donation size to total size}
+
+ggplot(data, aes(x = receipts, y = contribution_receipt_amount))+
+  scale_y_log10()+
+  geom_jitter() + 
+  geom_smooth(method = "lm") +
+  labs(title = "Relationship Between Donation Size and Campaign Total Donations",
+      x = "Total Campaign Donation Receipts",
+      y = "Donation Amount")
+
+```
+
+```{r num donors to total size}
+
+data <- data %>%
+  group_by(committee_name) %>%
+  mutate(num_donors = n()) %>%
+  ungroup()
+
+ggplot(data, aes(x = receipts, y = num_donors))+
+  scale_y_log10()+
+  geom_jitter() + 
+  geom_smooth(method = "lm") +
+  labs(title = "Relationship Between Number of Donors and Campaign Total Donations",
+      x = "Total Campaign Donation Receipts",
+      y = "Number of Donors")
+
+```
+
 
 
 
