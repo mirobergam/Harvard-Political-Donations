@@ -364,20 +364,23 @@ ggplot(data, aes(x = receipts, y = contribution_receipt_amount))+
   scale_y_log10()+
   geom_jitter() + 
   geom_smooth(method = "lm") +
+  #geom_smooth(method = "glm", method.args = list(family = "binomaial"), se = FALSE)+
   labs(title = "Relationship Between Donation Size and Campaign Total Donations",
       x = "Total Campaign Donation Receipts",
       y = "Donation Amount")
+
 
 ```
 
 ```{r num donors to total size}
 
-data <- data %>%
+donor_to_size <- data %>%
   group_by(committee_name) %>%
   mutate(num_donors = n()) %>%
+  slice(1) %>%
   ungroup()
 
-ggplot(data, aes(x = receipts, y = num_donors))+
+ggplot(donor_to_size, aes(x = receipts, y = num_donors))+
   scale_y_log10()+
   geom_jitter() + 
   geom_smooth(method = "lm") +
