@@ -390,6 +390,19 @@ ggplot(donor_to_size, aes(x = receipts, y = num_donors))+
 
 ```
 
+```{r}
+
+data %>%
+  group_by(committee_name) %>%
+  mutate(num_donations = n()) %>%
+  filter(num_donations > 20) %>%
+  ggplot(aes(x = committee_name, y = contribution_receipt_amount))+
+  theme(axis.text.x = element_text(angle = 90)) + 
+  scale_y_log10()+
+  geom_boxplot()
+
+```
+
 
 
 
