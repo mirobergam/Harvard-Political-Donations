@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
 library(tidyverse)
 library(ggplot2)
 library(formattable)
@@ -288,7 +289,26 @@ ggplot(party_support, aes(x="", y=num_party, fill=party_full))+
 
 ```
 
-```{r}
+```{r Multiple Regression}
+
+library(coefplot)
+
+data <- data %>%
+  mutate(professor = ifelse(contributor_occupation == "PROFESSOR" |
+                            contributor_occupation == "FACULTY" |
+                            contributor_occupation == "TEACHER" |
+                            contributor_occupation == "EDUCATOR", 1, 0))
+
+m1 <- lm(data = data, contribution_receipt_amount ~ professor + estimate) # plus professor
+
+summary(m1)
+#Visualize the coefficients
+coefplot(m1)
+
+
+```
+
+```{r Ideology  Regression}
 
 lm(data = data, contribution_receipt_amount ~ estimate)
 
@@ -299,6 +319,20 @@ ggplot(data, aes(x = estimate, y = contribution_receipt_amount))+
   labs(title = "Relationship Between Donation Size and Politican Ideology",
       x = "Estimated Political Ideology",
       y = "Donation Amount")
+
+```
+
+```{r Prof  Regression}
+
+lm(data = data, contribution_receipt_amount ~ professor)
+
+ggplot(data, aes(x = professor, y = contribution_receipt_amount))+
+  scale_y_log10()+
+  geom_jitter() + 
+  geom_smooth(method = "lm") +
+  labs(title = "Relationship Between Donation Size and Professorship",
+      x = "Professor or Not",
+      y = "Donation Size")
 
 ```
 
@@ -334,7 +368,7 @@ ggplot(donor_to_size, aes(x = receipts, y = num_donors))+
 
 ```
 
-```{r}
+```{r Donation Boxplot}
 
 data %>%
   group_by(committee_name) %>%
@@ -347,17 +381,7 @@ data %>%
 
 ```
 
-
-```{r}
-
-#m1 <- lm(donations ~ professor + candidate + ideology + can add more)
-
-#Visualize the coefficients
-#coefplot
-
-```
-
-```{r}
+```{r Alluvium Graph}
 
 by_employer_grouped <- by_employer %>%
   group_by(contributor_employer, committee_name) %>%
