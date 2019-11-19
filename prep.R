@@ -96,4 +96,4 @@ ideologies <- read_csv("ideology_score.csv") %>%
 data <- data %>%
   left_join(ideologies, by = c("committee_name" = "Name"))
 
-write_rds(data, "clean-data/clean_data.rds")
+write_rds(data, "HarvardDonations/clean_data.rds")
