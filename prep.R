@@ -96,4 +96,10 @@ ideologies <- read_csv("ideology_score.csv") %>%
 data <- data %>%
   left_join(ideologies, by = c("committee_name" = "Name"))
 
+data <- data %>%
+  mutate(professor = ifelse(contributor_occupation == "PROFESSOR" |
+                              contributor_occupation == "FACULTY" |
+                              contributor_occupation == "TEACHER" |
+                              contributor_occupation == "EDUCATOR", 1, 0))
+
 write_rds(data, "HarvardDonations/clean_data.rds")
