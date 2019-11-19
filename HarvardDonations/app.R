@@ -3,26 +3,39 @@ library(ggplot2)
 library(formattable)
 library(ggalluvial)
 library(shiny)
+library(shinythemes)
 
 data <- read_rds("clean_data.rds")
 
 ui <- navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential Campaigns",
                  
-                 tabPanel("About",
+                 tabPanel("About the Project",
                           
-                          p("This plot visualizes the locations of traffic violations in Oklahoma City Santa Fe and Spring Lake districts by the race of the violator. The data is taken from the Stanford Open Policing Project. This graphic was created by Miroslav Bergam, a freshman at Harvard College.")),
+                          p("This project looks to analyze how individuals employed by Harvard University donate their political dollars. I visualize in multiple different ways the size of the donations, the support different candidates recieve, and how political ideology impacts donations. I also look at how these donations differ within the graduate schools and how all of the donations compare to the general population's donations."),
+                          p("I accessed data on the political donations of individuals employed by Harvard University on the website of the Federal Election Committee, which releases information on every donation made to a presidential, senate, or house political campaign, including the name of the donor, their occupation, their employer, the donated amount, their state, and the recipient campaign."),
+                          p("Although this data was easily accessible by downloading a csv file, there was much data cleaning to be done to ensure that my analyses are accurate. First, I only observed donations made to 2020 presidential campaigns, excluding senate and house donations. Second, I filtered for donations made after January 1st, 2017, as there was no presidential donations to 2020 campaigns in 2016 or earlier. Third, I had to parse through the contributor employer data and filter out donations whose donors were not actually employed by Harvard University. For example, the donations from the employees of Harvard-Westlake School were present in the data, as they contain the word “Harvard.” Donations like this were removed."),
+                          p("I also used the Federal Election Committee website to find data on the campaign donations of the general population, the total campaign sizes, and the political party affiliations of the different committees."),
+                          p("Additionally, I sourced data from a DataForProgress.org article, which offered ideology scores for 2020 candidates who served in Congress. The specific data was not publicly availible, and I had to reach out to the article author to access it.")
+                 ),
+                 
+                 tabPanel("About the Author",
+                          h1("Miroslav Bergam"),
+                          p("I'm from New Jersey and I'm currently a freshman at Harvard College. I'm interested in data science, government, and the humanities.")
+                 ),
                  
                  tabPanel("General Donation Information",
                           plotOutput("totalDonations"),
                           plotOutput("uniqueDonors"),
                           plotOutput("totalSum"),
-                          plotOutput("meanDonations")
+                          plotOutput("meanDonations"),
+                          plotOutput("donationBoxplot")
                  ),
                  
                  tabPanel("Graduate School Analysis", 
                           plotOutput("gradSchoolTotalDonations"),
                           plotOutput("gradSchoolMeanDonations"),
-                          plotOutput("employerFacet")
+                          plotOutput("employerFacet"),
+                          plotOutput("sankeychart")
                  ),
                  
                  tabPanel("Regressions", 
@@ -241,6 +254,34 @@ server <- function(input, output) {
             
             coefplot(m1)
         })
+    
+    output$donationBoxplot <- renderPlot(
+      {
+        data %>%
+          group_by(committee_name) %>%
+          mutate(num_donations = n()) %>%
+          filter(num_donations > 20) %>%
+          ggplot(aes(x = committee_name, y = contribution_receipt_amount))+
+          theme(axis.text.x = element_text(angle = 90)) + 
+          scale_y_log10()+
+          geom_boxplot()
+      })
+    
+    output$sankeychart <- renderPlot(
+      {
+        by_employer_grouped <- by_employer %>%
+          group_by(contributor_employer, committee_name) %>%
+          summarise(num_donors = n())
+        
+        ggplot(by_employer_grouped,
+               aes(y = num_donors, axis1 = contributor_employer, axis2 = committee_name)) +
+          geom_alluvium(aes(fill = committee_name), width = 1/12) #+
+        #geom_stratum(width = 1/12, fill = "black", color = "grey") +
+        #geom_label(stat = "stratum", label.strata = TRUE) +
+        #scale_x_discrete(limits = c("Gender", "Dept"), expand = c(.05, .05)) +
+        #scale_fill_brewer(type = "qual", palette = "Set1") +
+        #ggtitle("UC Berkeley admissions and rejections, by sex and department")
+      })
     
 }
 

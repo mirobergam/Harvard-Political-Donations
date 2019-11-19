@@ -345,8 +345,6 @@ ggplot(donor_to_size, aes(x = receipts, y = num_donors))+
 
 ```
 
-### BOTTOM THREE NOT IN SHINY YET
-
 ```{r Donation Boxplot}
 
 data %>%
@@ -359,6 +357,8 @@ data %>%
   geom_boxplot()
 
 ```
+
+### BOTTOM THREE NOT IN SHINY YET
 
 ```{r Alluvium Graph}
 
