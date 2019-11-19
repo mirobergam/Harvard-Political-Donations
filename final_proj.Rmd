@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(tidyverse)
 library(ggplot2)
 library(formattable)
+library(ggalluvial)
 
 ##  People who donated to more than one
 ## PS8 data source
@@ -118,63 +119,6 @@ data <- data %>%
 
 ```
 
-```{r PROF ONLY}
-
-profs <- data %>%
-  filter(contributor_occupation == "PROFESSOR")
-
-############################
-
-number_donations <- profs %>%
-  group_by(committee_name) %>%
-  summarise(num_donations = n()) %>%
-  mutate(num_donations = as.numeric(num_donations))
-
-
-ggplot(number_donations, aes(x = reorder(committee_name, num_donations), y = num_donations, fill = committee_name)) +
-  geom_col() + 
-  theme(axis.text.x = element_text(angle = 90)) + 
-  theme(legend.position = "none") + 
-  labs(title = "Harvard Professors' Political Donations to 2020 Presidential Campaigns",
-       subtitle = "Donations of Professors Employed by Harvard University",
-       x = "Presidential  Campaigns",
-       y = "Number of Individual Donations")
-
-############################
-
-num_donors <- profs %>%
-  group_by(committee_name, contributor_name) %>%
-  slice(1) %>%
-  ungroup() %>%
-  group_by(committee_name) %>%
-  summarise(num_donors = n())
-
-ggplot(num_donors, aes(x = reorder(committee_name, num_donors), y = num_donors, fill = committee_name)) +
-  geom_col() + 
-  theme(axis.text.x = element_text(angle = 90)) + 
-  theme(legend.position = "none") +
-  labs(title = "Harvard Political Donors to 2020 Presidential Campaigns",
-       subtitle = "Donations of Professors Employed by Harvard University",
-       x = "Presidential Campaigns",
-       y = "Number of Donors")
-
-############################
-
-amount_graph <- profs %>%
-  group_by(committee_name) %>%
-  summarise(total_donations = sum(contribution_receipt_amount)) %>%
-  mutate(total_donations = as.numeric(total_donations))
-
-ggplot(amount_graph, aes(x = reorder(committee_name, total_donations), y = total_donations, fill = committee_name)) +
-  geom_col() + 
-  theme(axis.text.x = element_text(angle = 90)) + 
-  theme(legend.position = "none") +
-  labs(title = "Harvard Professors' Total Donations to 2020 Presidential Campaigns",
-       subtitle = "Donations of Professors Employed by Harvard University",
-       x = "Presidential Campaigns",
-       y = "Dollars")
-
-```
 
 ```{r Number of Donations}
 
@@ -401,6 +345,32 @@ data %>%
   scale_y_log10()+
   geom_boxplot()
 
+```
+
+
+```{r}
+
+#m1 <- lm(donations ~ professor + candidate + ideology + can add more)
+
+#Visualize the coefficients
+#coefplot
+
+```
+
+```{r}
+
+by_employer_grouped <- by_employer %>%
+  group_by(contributor_employer, committee_name) %>%
+  summarise(num_donors = n())
+  
+ggplot(by_employer_grouped,
+       aes(y = num_donors, axis1 = contributor_employer, axis2 = committee_name)) +
+  geom_alluvium(aes(fill = committee_name), width = 1/12) #+
+  #geom_stratum(width = 1/12, fill = "black", color = "grey") +
+  #geom_label(stat = "stratum", label.strata = TRUE) +
+  #scale_x_discrete(limits = c("Gender", "Dept"), expand = c(.05, .05)) +
+  #scale_fill_brewer(type = "qual", palette = "Set1") +
+  #ggtitle("UC Berkeley admissions and rejections, by sex and department")
 ```
 
 
