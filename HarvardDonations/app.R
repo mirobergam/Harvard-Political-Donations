@@ -4,6 +4,7 @@ library(formattable)
 library(ggalluvial)
 library(shiny)
 library(shinythemes)
+library(coefplot)
 
 data <- read_rds("clean_data.rds")
 
@@ -23,7 +24,7 @@ ui <- navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential
                           p("I'm from New Jersey and I'm currently a freshman at Harvard College. I'm interested in data science, government, and the humanities.")
                  ),
                  
-                 tabPanel("General Donation Information",
+                 tabPanel("Donation Information",
                           plotOutput("totalDonations"),
                           plotOutput("uniqueDonors"),
                           plotOutput("totalSum"),
@@ -38,12 +39,15 @@ ui <- navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential
                           plotOutput("sankeychart")
                  ),
                  
-                 tabPanel("Regressions", 
-                          plotOutput("numDonorsToTotalSize"),
-                          plotOutput("donationSizeToTotalSize"),
+                 tabPanel("Professorship and Ideology Analysis", 
                           plotOutput("profRegress"),
                           plotOutput("ideologyRegress"),
                           plotOutput("coefPlot")
+                 ),
+                 
+                 tabPanel("General Population Comparison", 
+                          plotOutput("numDonorsToTotalSize"),
+                          plotOutput("donationSizeToTotalSize")
                  )
 )
 
@@ -224,7 +228,8 @@ server <- function(input, output) {
                 #geom_smooth(method = "glm", method.args = list(family = "binomaial"), se = FALSE)+
                 labs(title = "Relationship Between Donation Size and Campaign Total Donations",
                      x = "Total Campaign Donation Receipts",
-                     y = "Donation Amount")
+                     y = "Donation Size in Dollars") + 
+                scale_x_continuous(labels = function(x) format(x, scientific = FALSE))
         })
     
     output$numDonorsToTotalSize <- renderPlot(
@@ -241,7 +246,8 @@ server <- function(input, output) {
                 geom_smooth(method = "lm") +
                 labs(title = "Relationship Between Number of Donors and Campaign Total Donations",
                      x = "Total Campaign Donation Receipts",
-                     y = "Number of Donors")
+                     y = "Number of Donors") +
+                scale_x_continuous(labels = function(x) format(x, scientific = FALSE))
         })
     
     output$coefPlot <- renderPlot(
@@ -264,7 +270,11 @@ server <- function(input, output) {
           ggplot(aes(x = committee_name, y = contribution_receipt_amount))+
           theme(axis.text.x = element_text(angle = 90)) + 
           scale_y_log10()+
-          geom_boxplot()
+          geom_boxplot() + 
+          labs(title = "Donations to Candidates with Greater than 20 Donations",
+               subtitle = "Note the scale of the Y axis",
+               x = "Candidates",
+               y = "Donation Size in Dollars")
       })
     
     output$sankeychart <- renderPlot(
@@ -276,6 +286,7 @@ server <- function(input, output) {
         ggplot(by_employer_grouped,
                aes(y = num_donors, axis1 = contributor_employer, axis2 = committee_name)) +
           geom_alluvium(aes(fill = committee_name), width = 1/12) #+
+        
         #geom_stratum(width = 1/12, fill = "black", color = "grey") +
         #geom_label(stat = "stratum", label.strata = TRUE) +
         #scale_x_discrete(limits = c("Gender", "Dept"), expand = c(.05, .05)) +
