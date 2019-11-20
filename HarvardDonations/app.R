@@ -26,12 +26,12 @@ ui <- navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential
                  
                  tabPanel("Donation Information",
                           selectInput("plot", label = h5("Select Plot"), 
-                                      choices = list("totalDonations" = "totalDonations",
-                                                     "uniqueDonors" = "uniqueDonors",
-                                                     "totalSum" = "totalSum",
-                                                     "meanDonations" = "meanDonations",
-                                                     "donationBoxplot" = "donationBoxplot"), 
-                                      selected =  "donationBoxplot",
+                                      choices = list("Number of Donations" = "totalDonations",
+                                                     "Unique Donors" = "uniqueDonors",
+                                                     "Total Donation Sum" = "totalSum",
+                                                     "Mean Donation Size" = "meanDonations",
+                                                     "Donation Boxplot" = "donationBoxplot"), 
+                                      selected =  "totalDonations",
                                       multiple = FALSE,
                                       selectize = FALSE,
                                       width = '400px',
@@ -40,21 +40,43 @@ ui <- navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential
                  ),
                  
                  tabPanel("Graduate School Analysis", 
-                          plotOutput("gradSchoolTotalDonations"),
-                          plotOutput("gradSchoolMeanDonations"),
-                          plotOutput("employerFacet"),
-                          plotOutput("sankeychart")
+                          selectInput("plot2", label = h5("Select Plot"), 
+                                      choices = list("Total Donations" = "gradSchoolTotalDonations",
+                                                     "Mean Donations" = "gradSchoolMeanDonations",
+                                                     "Candidate Support by Employer" = "employerFacet",
+                                                     "Candidate Support Flowchart" = "sankeyChart"), 
+                                      selected = "gradSchoolTotalDonations",
+                                      multiple = FALSE,
+                                      selectize = FALSE,
+                                      width = '400px',
+                                      size = 1),
+                          plotOutput("gradSchoolInfo")
+                          
                  ),
                  
-                 tabPanel("Professorship and Ideology Analysis", 
-                          plotOutput("profRegress"),
-                          plotOutput("ideologyRegress"),
-                          plotOutput("coefPlot")
+                 tabPanel("Professorship and Ideology Analysis",
+                          selectInput("plot3", label = h5("Select Plot"), 
+                                      choices = list("Professorship Regression" = "profRegress",
+                                                     "Ideology Regression" = "ideologyRegress",
+                                                     "Coefficient Plot" = "coefPlot"), 
+                                      selected = "coefPlot",
+                                      multiple = FALSE,
+                                      selectize = FALSE,
+                                      width = '400px',
+                                      size = 1),
+                          plotOutput("profIdeoAnalysis")
                  ),
                  
-                 tabPanel("General Population Comparison", 
-                          plotOutput("numDonorsToTotalSize"),
-                          plotOutput("donationSizeToTotalSize")
+                 tabPanel("General Population Comparison",
+                          selectInput("plot4", label = h5("Select Plot"), 
+                                      choices = list("Donation Size to Campaign Amount" = "donationSizeToTotalSize",
+                                                     "Number of Donors to Campaign Amount" = "numDonorsToTotalSize"), 
+                                      selected = "donationSizeToTotalSize",
+                                      multiple = FALSE,
+                                      selectize = FALSE,
+                                      width = '400px',
+                                      size = 1),
+                          plotOutput("generalPop")
                  )
 )
 
@@ -143,164 +165,166 @@ server <- function(input, output) {
       
     }
   })
-    
-    
-
-    output$gradSchoolTotalDonations <- renderPlot(
-      {
-        by_employer <- data %>%
-          filter(contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
-                   contributor_employer == "HARVARD LAW SCHOOL" | 
-                   contributor_employer == "HARVARD BUSINESS SCHOOL" | 
-                   contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH" |
-                   contributor_employer == "HARVARD GRADUATE SCHOOL OF ARTS AND SCIENCES" |
-                   contributor_employer == "HARVARD GRADUATE SCHOOL OF EDUCATION" |
-                   contributor_employer == "HARVARD DIVINITY SCHOOL")
-        
-        by_employer_sum <- by_employer %>%  
-          group_by(contributor_employer) %>%
-          summarise(total_donations = sum(contribution_receipt_amount)) %>%
-          mutate(total_donations = as.numeric(total_donations))
-        
-        ggplot(by_employer_sum, aes(x = reorder(contributor_employer, total_donations), y = total_donations, fill = contributor_employer)) +
-          geom_col() + 
-          theme(axis.text.x = element_text(angle = 90)) + 
-          theme(legend.position = "none") +
-          labs(title = "Harvard Grad School Employees' Total Donations to 2020 Pres. Campaigns",
-               subtitle = "Donations by Individuals Employed by Graduate Schools",
-               x = "Graduate Schools",
-               y = "Dollars")
-      })
-    
-    output$gradSchoolMeanDonations <- renderPlot(
-      {
-        by_employer <- data %>%
-          filter(contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
-                   contributor_employer == "HARVARD LAW SCHOOL" | 
-                   contributor_employer == "HARVARD BUSINESS SCHOOL" | 
-                   contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH" |
-                   contributor_employer == "HARVARD GRADUATE SCHOOL OF ARTS AND SCIENCES" |
-                   contributor_employer == "HARVARD GRADUATE SCHOOL OF EDUCATION" |
-                   contributor_employer == "HARVARD DIVINITY SCHOOL")
-        
-        by_employer_mean <- by_employer %>%  
-          group_by(contributor_employer) %>%
-          summarise(total_donations = mean(contribution_receipt_amount)) %>%
-          mutate(total_donations = as.numeric(total_donations))
-        
-        ggplot(by_employer_mean, aes(x = reorder(contributor_employer, total_donations), y = total_donations, fill = contributor_employer)) +
-          geom_col() + 
-          theme(axis.text.x = element_text(angle = 90)) + 
-          theme(legend.position = "none") +
-          labs(title = "Harvard Grad School Employees' Mean Donations to 2020 Pres. Campaigns",
-               subtitle = "Donations by Individuals Employed by Graduate Schools",
-               x = "Graduate Schools",
-               y = "Dollars")
-      })
-    
-    output$employerFacet <- renderPlot(
-        {
-            by_employer_facet <- data %>%
-                filter(contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
-                           contributor_employer == "HARVARD LAW SCHOOL" | 
-                           contributor_employer == "HARVARD BUSINESS SCHOOL" | 
-                           contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH" |
-                           contributor_employer == "HARVARD GRADUATE SCHOOL OF EDUCATION")
-            
-            ggplot(by_employer_facet, aes(x = committee_name, fill = committee_name)) +
-                geom_bar() + 
-                theme(axis.text.x = element_text(angle = 90)) + 
-                theme(legend.position = "none") + 
-                facet_wrap(~ contributor_employer) +
-                labs(y = "Number of Donations",
-                     x = "Candidate")
-        })
-    
-    output$ideologyRegress <- renderPlot(
-        {
-            lm(data = data, contribution_receipt_amount ~ estimate)
-            
-            ggplot(data, aes(x = estimate, y = contribution_receipt_amount))+
-                scale_y_log10()+
-                geom_jitter() + 
-                geom_smooth(method = "lm") +
-                labs(title = "Relationship Between Donation Size and Politican Ideology",
-                     x = "Estimated Political Ideology",
-                     y = "Donation Amount")
-        })
-    
-    output$profRegress <- renderPlot(
-        {
-            lm(data = data, contribution_receipt_amount ~ professor)
-            
-            ggplot(data, aes(x = professor, y = contribution_receipt_amount))+
-                scale_y_log10()+
-                geom_jitter() + 
-                geom_smooth(method = "lm") +
-                labs(title = "Relationship Between Donation Size and Professorship",
-                     x = "Professor or Not",
-                     y = "Donation Size")
-        })
-    
-    output$donationSizeToTotalSize <- renderPlot(
-        {
-            ggplot(data, aes(x = receipts, y = contribution_receipt_amount))+
-                scale_y_log10()+
-                geom_jitter() + 
-                geom_smooth(method = "lm") +
-                #geom_smooth(method = "glm", method.args = list(family = "binomaial"), se = FALSE)+
-                labs(title = "Relationship Between Donation Size and Campaign Total Donations",
-                     x = "Total Campaign Donation Receipts",
-                     y = "Donation Size in Dollars") + 
-                scale_x_continuous(labels = function(x) format(x, scientific = FALSE))
-        })
-    
-    output$numDonorsToTotalSize <- renderPlot(
-        {
-            donor_to_size <- data %>%
-                group_by(committee_name) %>%
-                mutate(num_donors = n()) %>%
-                slice(1) %>%
-                ungroup()
-            
-            ggplot(donor_to_size, aes(x = receipts, y = num_donors))+
-                scale_y_log10()+
-                geom_jitter() + 
-                geom_smooth(method = "lm") +
-                labs(title = "Relationship Between Number of Donors and Campaign Total Donations",
-                     x = "Total Campaign Donation Receipts",
-                     y = "Number of Donors") +
-                scale_x_continuous(labels = function(x) format(x, scientific = FALSE))
-        })
-    
-    output$coefPlot <- renderPlot(
-        {
-            m1 <- lm(data = data, contribution_receipt_amount ~ professor + estimate) # plus professor
-        
-            summary(m1)
-            
-            #Visualize the coefficients
-            
-            coefplot(m1)
-        })
   
-    output$sankeychart <- renderPlot(
-      {
-        by_employer_grouped <- by_employer %>%
-          group_by(contributor_employer, committee_name) %>%
-          summarise(num_donors = n())
-        
-        ggplot(by_employer_grouped,
-               aes(y = num_donors, axis1 = contributor_employer, axis2 = committee_name)) +
-          geom_alluvium(aes(fill = committee_name), width = 1/12) #+
-        
-        #geom_stratum(width = 1/12, fill = "black", color = "grey") +
-        #geom_label(stat = "stratum", label.strata = TRUE) +
-        #scale_x_discrete(limits = c("Gender", "Dept"), expand = c(.05, .05)) +
-        #scale_fill_brewer(type = "qual", palette = "Set1") +
-        #ggtitle("UC Berkeley admissions and rejections, by sex and department")
-      })
+  output$gradSchoolInfo <- renderPlot({
     
+    if(input$plot2 == "gradSchoolTotalDonations") {     
+      by_employer <- data %>%
+        filter(contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
+                 contributor_employer == "HARVARD LAW SCHOOL" | 
+                 contributor_employer == "HARVARD BUSINESS SCHOOL" | 
+                 contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH" |
+                 contributor_employer == "HARVARD GRADUATE SCHOOL OF ARTS AND SCIENCES" |
+                 contributor_employer == "HARVARD GRADUATE SCHOOL OF EDUCATION" |
+                 contributor_employer == "HARVARD DIVINITY SCHOOL")
+      
+      by_employer_sum <- by_employer %>%  
+        group_by(contributor_employer) %>%
+        summarise(total_donations = sum(contribution_receipt_amount)) %>%
+        mutate(total_donations = as.numeric(total_donations))
+      
+      ggplot(by_employer_sum, aes(x = reorder(contributor_employer, total_donations), y = total_donations, fill = contributor_employer)) +
+        geom_col() + 
+        theme(axis.text.x = element_text(angle = 90)) + 
+        theme(legend.position = "none") +
+        labs(title = "Harvard Grad School Employees' Total Donations to 2020 Pres. Campaigns",
+             subtitle = "Donations by Individuals Employed by Graduate Schools",
+             x = "Graduate Schools",
+             y = "Dollars")
+      
+    } else if(input$plot2 == "gradSchoolMeanDonations") {
+      
+      by_employer <- data %>%
+        filter(contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
+                 contributor_employer == "HARVARD LAW SCHOOL" | 
+                 contributor_employer == "HARVARD BUSINESS SCHOOL" | 
+                 contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH" |
+                 contributor_employer == "HARVARD GRADUATE SCHOOL OF ARTS AND SCIENCES" |
+                 contributor_employer == "HARVARD GRADUATE SCHOOL OF EDUCATION" |
+                 contributor_employer == "HARVARD DIVINITY SCHOOL")
+      
+      by_employer_mean <- by_employer %>%  
+        group_by(contributor_employer) %>%
+        summarise(total_donations = mean(contribution_receipt_amount)) %>%
+        mutate(total_donations = as.numeric(total_donations))
+      
+      ggplot(by_employer_mean, aes(x = reorder(contributor_employer, total_donations), y = total_donations, fill = contributor_employer)) +
+        geom_col() + 
+        theme(axis.text.x = element_text(angle = 90)) + 
+        theme(legend.position = "none") +
+        labs(title = "Harvard Grad School Employees' Mean Donations to 2020 Pres. Campaigns",
+             subtitle = "Donations by Individuals Employed by Graduate Schools",
+             x = "Graduate Schools",
+             y = "Dollars")
+      
+    } else if(input$plot2 == "employerFacet"){
+      
+      by_employer_facet <- data %>%
+        filter(contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
+                 contributor_employer == "HARVARD LAW SCHOOL" | 
+                 contributor_employer == "HARVARD BUSINESS SCHOOL" | 
+                 contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH" |
+                 contributor_employer == "HARVARD GRADUATE SCHOOL OF EDUCATION")
+      
+      ggplot(by_employer_facet, aes(x = committee_name, fill = committee_name)) +
+        geom_bar() + 
+        theme(axis.text.x = element_text(angle = 90)) + 
+        theme(legend.position = "none") + 
+        facet_wrap(~ contributor_employer) +
+        labs(y = "Number of Donations",
+             x = "Candidate")
+      
+    } else if(input$plot2 == "sankeyChart") {
+      
+      by_employer_grouped <- by_employer %>%
+        group_by(contributor_employer, committee_name) %>%
+        summarise(num_donors = n())
+      
+      ggplot(by_employer_grouped,
+             aes(y = num_donors, axis1 = contributor_employer, axis2 = committee_name)) +
+        geom_alluvium(aes(fill = committee_name), width = 1/12) #+
+      
+      #geom_stratum(width = 1/12, fill = "black", color = "grey") +
+      #geom_label(stat = "stratum", label.strata = TRUE) +
+      #scale_x_discrete(limits = c("Gender", "Dept"), expand = c(.05, .05)) +
+      #scale_fill_brewer(type = "qual", palette = "Set1") +
+      #ggtitle("UC Berkeley admissions and rejections, by sex and department")
+      
+    } 
+  })
+  
+  output$profIdeoAnalysis <- renderPlot({
+    
+    if(input$plot3 == "ideoRegress") {     
+      
+      lm(data = data, contribution_receipt_amount ~ estimate)
+      
+      ggplot(data, aes(x = estimate, y = contribution_receipt_amount))+
+        scale_y_log10()+
+        geom_jitter() + 
+        geom_smooth(method = "lm") +
+        labs(title = "Relationship Between Donation Size and Politican Ideology",
+             x = "Estimated Political Ideology",
+             y = "Donation Amount")
+      
+    } else if(input$plot3 == "ideologyRegress") {
+      
+      lm(data = data, contribution_receipt_amount ~ professor)
+      
+      ggplot(data, aes(x = professor, y = contribution_receipt_amount))+
+        scale_y_log10()+
+        geom_jitter() + 
+        geom_smooth(method = "lm") +
+        labs(title = "Relationship Between Donation Size and Professorship",
+             x = "Professor or Not",
+             y = "Donation Size")
+      
+    } else if(input$plot3 == "coefPlot"){
+      
+      m1 <- lm(data = data, contribution_receipt_amount ~ professor + estimate) # plus professor
+      
+      summary(m1)
+      
+      #Visualize the coefficients
+      
+      coefplot(m1)
+      
+    }
+  })
+  
+  output$generalPop <- renderPlot({
+    
+    if(input$plot4 == "donationSizeToTotalSize") {     
+      
+      ggplot(data, aes(x = receipts, y = contribution_receipt_amount))+
+        scale_y_log10()+
+        geom_jitter() + 
+        geom_smooth(method = "lm") +
+        #geom_smooth(method = "glm", method.args = list(family = "binomaial"), se = FALSE)+
+        labs(title = "Relationship Between Donation Size and Campaign Total Donations",
+             x = "Total Campaign Donation Receipts",
+             y = "Donation Size in Dollars") + 
+        scale_x_continuous(labels = function(x) format(x, scientific = FALSE))
+      
+    } else if(input$plot4 == "numDonorsToTotalSize") {
+      
+      donor_to_size <- data %>%
+        group_by(committee_name) %>%
+        mutate(num_donors = n()) %>%
+        slice(1) %>%
+        ungroup()
+      
+      ggplot(donor_to_size, aes(x = receipts, y = num_donors))+
+        scale_y_log10()+
+        geom_jitter() + 
+        geom_smooth(method = "lm") +
+        labs(title = "Relationship Between Number of Donors and Campaign Total Donations",
+             x = "Total Campaign Donation Receipts",
+             y = "Number of Donors") +
+        scale_x_continuous(labels = function(x) format(x, scientific = FALSE))
+      
+    }
+  })
 }
 
 # Run the application 
