@@ -25,11 +25,18 @@ ui <- navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential
                  ),
                  
                  tabPanel("Donation Information",
-                          plotOutput("totalDonations"),
-                          plotOutput("uniqueDonors"),
-                          plotOutput("totalSum"),
-                          plotOutput("meanDonations"),
-                          plotOutput("donationBoxplot")
+                          selectInput("plot", label = h5("Select Plot"), 
+                                      choices = list("totalDonations" = "totalDonations",
+                                                     "uniqueDonors" = "uniqueDonors",
+                                                     "totalSum" = "totalSum",
+                                                     "meanDonations" = "meanDonations",
+                                                     "donationBoxplot" = "donationBoxplot"), 
+                                      selected =  "donationBoxplot",
+                                      multiple = FALSE,
+                                      selectize = FALSE,
+                                      width = '400px',
+                                      size = 1),
+                          plotOutput("donationInfo")
                  ),
                  
                  tabPanel("Graduate School Analysis", 
@@ -55,74 +62,90 @@ ui <- navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     
-    output$totalDonations <- renderPlot(
-        {
-            number_donations <- data %>%
-                group_by(committee_name) %>%
-                summarise(num_donations = n()) %>%
-                mutate(num_donations = as.numeric(num_donations))
-            
-            ggplot(number_donations, aes(x = reorder(committee_name, num_donations), y = num_donations, fill = committee_name)) +
-                geom_col() + 
-                theme(axis.text.x = element_text(angle = 90)) + 
-                theme(legend.position = "none") + 
-                labs(title = "Harvard Political Donations to 2020 Presidential Campaigns",
-                     subtitle = "Donations of Individuals Employed by Harvard University",
-                     x = "Presidential  Campaigns",
-                     y = "Number of Individual Donations")
-        })
+  output$donationInfo <- renderPlot({
     
-    output$uniqueDonors <- renderPlot(
-        {
-            num_donors <- data %>%
-                distinct(committee_name, contributor_name) %>%
-                group_by(committee_name) %>%
-                summarise(num_donors = n())
-            
-            ggplot(num_donors, aes(x = reorder(committee_name, num_donors), y = num_donors, fill = committee_name)) +
-                geom_col() + 
-                theme(axis.text.x = element_text(angle = 90)) + 
-                theme(legend.position = "none") +
-                labs(title = "Harvard Political Donors to 2020 Presidential Campaigns",
-                     subtitle = "Individuals Employed by Harvard University",
-                     x = "Presidential Campaigns",
-                     y = "Number of Donors")
-        })
+    if(input$plot == "totalDonations") {     
+      number_donations <- data %>%
+        group_by(committee_name) %>%
+        summarise(num_donations = n()) %>%
+        mutate(num_donations = as.numeric(num_donations))
+      
+      ggplot(number_donations, aes(x = reorder(committee_name, num_donations), y = num_donations, fill = committee_name)) +
+        geom_col() + 
+        theme(axis.text.x = element_text(angle = 90)) + 
+        theme(legend.position = "none") + 
+        labs(title = "Harvard Political Donations to 2020 Presidential Campaigns",
+             subtitle = "Donations of Individuals Employed by Harvard University",
+             x = "Presidential  Campaigns",
+             y = "Number of Individual Donations")
     
-    output$totalSum <- renderPlot(
-        {
-            amount_graph <- data %>%
-                group_by(committee_name) %>%
-                summarise(total_donations = sum(contribution_receipt_amount)) %>%
-                mutate(total_donations = as.numeric(total_donations))
-            
-            ggplot(amount_graph, aes(x = reorder(committee_name, total_donations), y = total_donations, fill = committee_name)) +
-                geom_col() + 
-                theme(axis.text.x = element_text(angle = 90)) + 
-                theme(legend.position = "none") +
-                labs(title = "Harvard Employees' Total Donations to 2020 Presidential Campaigns",
-                     subtitle = "Donations by Individuals Employed by Harvard University",
-                     x = "Presidential Campaigns",
-                     y = "Dollars")
-        })
-    
-    output$meanDonations <- renderPlot(
-      {
-        amount_graph <- data %>%
+      } else if(input$plot == "uniqueDonors") {
+        num_donors <- data %>%
+          distinct(committee_name, contributor_name) %>%
           group_by(committee_name) %>%
-          summarise(mean_donations = mean(contribution_receipt_amount)) %>%
-          mutate(mean_donations = as.numeric(mean_donations))
+          summarise(num_donors = n())
         
-        ggplot(amount_graph, aes(x = reorder(committee_name, mean_donations), y = mean_donations, fill = committee_name)) +
+        ggplot(num_donors, aes(x = reorder(committee_name, num_donors), y = num_donors, fill = committee_name)) +
           geom_col() + 
           theme(axis.text.x = element_text(angle = 90)) + 
           theme(legend.position = "none") +
-          labs(title = "Harvard Employees' Mean Donations to 2020 Presidential Campaigns",
-               subtitle = "Donations by Individuals Employed by Harvard University",
+          labs(title = "Harvard Political Donors to 2020 Presidential Campaigns",
+               subtitle = "Individuals Employed by Harvard University",
                x = "Presidential Campaigns",
-               y = "Dollars")
-      })
+               y = "Number of Donors")
+        
+    } else if(input$plot == "totalSum"){
+      
+      amount_graph <- data %>%
+        group_by(committee_name) %>%
+        summarise(total_donations = sum(contribution_receipt_amount)) %>%
+        mutate(total_donations = as.numeric(total_donations))
+      
+      ggplot(amount_graph, aes(x = reorder(committee_name, total_donations), y = total_donations, fill = committee_name)) +
+        geom_col() + 
+        theme(axis.text.x = element_text(angle = 90)) + 
+        theme(legend.position = "none") +
+        labs(title = "Harvard Employees' Total Donations to 2020 Presidential Campaigns",
+             subtitle = "Donations by Individuals Employed by Harvard University",
+             x = "Presidential Campaigns",
+             y = "Dollars")
+      
+    } else if(input$plot == "meanDonations") {
+      
+      amount_graph <- data %>%
+        group_by(committee_name) %>%
+        summarise(mean_donations = mean(contribution_receipt_amount)) %>%
+        mutate(mean_donations = as.numeric(mean_donations))
+      
+      ggplot(amount_graph, aes(x = reorder(committee_name, mean_donations), y = mean_donations, fill = committee_name)) +
+        geom_col() + 
+        theme(axis.text.x = element_text(angle = 90)) + 
+        theme(legend.position = "none") +
+        labs(title = "Harvard Employees' Mean Donations to 2020 Presidential Campaigns",
+             subtitle = "Donations by Individuals Employed by Harvard University",
+             x = "Presidential Campaigns",
+             y = "Dollars")
     
+      } else if(input$plot == "donationBoxplot") {
+      
+        data %>%
+          group_by(committee_name) %>%
+          mutate(num_donations = n()) %>%
+          filter(num_donations > 20) %>%
+          ggplot(aes(x = committee_name, y = contribution_receipt_amount))+
+          theme(axis.text.x = element_text(angle = 90)) + 
+          scale_y_log10()+
+          geom_boxplot() + 
+          labs(title = "Donations to Candidates with Greater than 20 Donations",
+               subtitle = "Note the scale of the Y axis",
+               x = "Candidates",
+               y = "Donation Size in Dollars")
+      
+    }
+  })
+    
+    
+
     output$gradSchoolTotalDonations <- renderPlot(
       {
         by_employer <- data %>%
@@ -260,23 +283,7 @@ server <- function(input, output) {
             
             coefplot(m1)
         })
-    
-    output$donationBoxplot <- renderPlot(
-      {
-        data %>%
-          group_by(committee_name) %>%
-          mutate(num_donations = n()) %>%
-          filter(num_donations > 20) %>%
-          ggplot(aes(x = committee_name, y = contribution_receipt_amount))+
-          theme(axis.text.x = element_text(angle = 90)) + 
-          scale_y_log10()+
-          geom_boxplot() + 
-          labs(title = "Donations to Candidates with Greater than 20 Donations",
-               subtitle = "Note the scale of the Y axis",
-               x = "Candidates",
-               y = "Donation Size in Dollars")
-      })
-    
+  
     output$sankeychart <- renderPlot(
       {
         by_employer_grouped <- by_employer %>%
