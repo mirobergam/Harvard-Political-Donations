@@ -7,6 +7,7 @@ library(shinythemes)
 library(coefplot)
 
 data <- read_rds("clean_data.rds")
+data <- read_rds("employer_clean_data.rds")
 
 ui <- fluidPage(theme = shinytheme("flatly"),
                 navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential Campaigns",
@@ -174,14 +175,6 @@ server <- function(input, output) {
   output$gradSchoolInfo <- renderPlot({
     
     if(input$plot2 == "gradSchoolTotalDonations") {     
-      by_employer <- data %>%
-        filter(contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
-                 contributor_employer == "HARVARD LAW SCHOOL" | 
-                 contributor_employer == "HARVARD BUSINESS SCHOOL" | 
-                 contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH" |
-                 contributor_employer == "HARVARD GRADUATE SCHOOL OF ARTS AND SCIENCES" |
-                 contributor_employer == "HARVARD GRADUATE SCHOOL OF EDUCATION" |
-                 contributor_employer == "HARVARD DIVINITY SCHOOL")
       
       by_employer_sum <- by_employer %>%  
         group_by(contributor_employer) %>%
@@ -198,16 +191,7 @@ server <- function(input, output) {
              y = "Dollars")
       
     } else if(input$plot2 == "gradSchoolMeanDonations") {
-      
-      by_employer <- data %>%
-        filter(contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
-                 contributor_employer == "HARVARD LAW SCHOOL" | 
-                 contributor_employer == "HARVARD BUSINESS SCHOOL" | 
-                 contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH" |
-                 contributor_employer == "HARVARD GRADUATE SCHOOL OF ARTS AND SCIENCES" |
-                 contributor_employer == "HARVARD GRADUATE SCHOOL OF EDUCATION" |
-                 contributor_employer == "HARVARD DIVINITY SCHOOL")
-      
+
       by_employer_mean <- by_employer %>%  
         group_by(contributor_employer) %>%
         summarise(total_donations = mean(contribution_receipt_amount)) %>%
@@ -224,14 +208,7 @@ server <- function(input, output) {
       
     } else if(input$plot2 == "employerFacet"){
       
-      by_employer_facet <- data %>%
-        filter(contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
-                 contributor_employer == "HARVARD LAW SCHOOL" | 
-                 contributor_employer == "HARVARD BUSINESS SCHOOL" | 
-                 contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH" |
-                 contributor_employer == "HARVARD GRADUATE SCHOOL OF EDUCATION")
-      
-      ggplot(by_employer_facet, aes(x = committee_name, fill = committee_name)) +
+      ggplot(by_employer, aes(x = committee_name, fill = committee_name)) +
         geom_bar() + 
         theme(axis.text.x = element_text(angle = 90)) + 
         theme(legend.position = "none") + 
@@ -247,10 +224,9 @@ server <- function(input, output) {
       
       ggplot(by_employer_grouped,
              aes(y = num_donors, axis1 = contributor_employer, axis2 = committee_name)) +
-        geom_alluvium(aes(fill = committee_name), width = 1/12) #+
-      
-      #geom_stratum(width = 1/12, fill = "black", color = "grey") +
-      #geom_label(stat = "stratum", label.strata = TRUE) +
+        geom_alluvium(aes(fill = committee_name), width = 1/12)+
+      geom_stratum(width = 1/12, fill = "black", color = "grey") +
+      geom_label(stat = "stratum", label.strata = TRUE)# +
       #scale_x_discrete(limits = c("Gender", "Dept"), expand = c(.05, .05)) +
       #scale_fill_brewer(type = "qual", palette = "Set1") +
       #ggtitle("UC Berkeley admissions and rejections, by sex and department")

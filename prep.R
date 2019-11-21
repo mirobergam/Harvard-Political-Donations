@@ -102,4 +102,14 @@ data <- data %>%
                               contributor_occupation == "TEACHER" |
                               contributor_occupation == "EDUCATOR", 1, 0))
 
+by_employer <- data %>%
+  filter(contributor_employer == "HARVARD KENNEDY SCHOOL"  | 
+           contributor_employer == "HARVARD LAW SCHOOL" | 
+           contributor_employer == "HARVARD BUSINESS SCHOOL" | 
+           contributor_employer == "HARVARD SCHOOL OF PUBLIC HEALTH" |
+           contributor_employer == "HARVARD GRADUATE SCHOOL OF ARTS AND SCIENCES" |
+           contributor_employer == "HARVARD GRADUATE SCHOOL OF EDUCATION" |
+           contributor_employer == "HARVARD DIVINITY SCHOOL")
+
 write_rds(data, "HarvardDonations/clean_data.rds")
+write_rds(by_employer, "HarvardDonations/employer_clean_data.rds")
