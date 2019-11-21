@@ -8,7 +8,8 @@ library(coefplot)
 
 data <- read_rds("clean_data.rds")
 
-ui <- navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential Campaigns",
+ui <- fluidPage(theme = shinytheme("flatly"),
+                navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential Campaigns",
                  
                  tabPanel("About the Project",
                           
@@ -25,6 +26,7 @@ ui <- navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential
                  ),
                  
                  tabPanel("Donation Information",
+                          p("Select from the following plots to see how individuals employed by Harvard donate to 2020 presidential campaigns."),
                           selectInput("plot", label = h5("Select Plot"), 
                                       choices = list("Number of Donations" = "totalDonations",
                                                      "Unique Donors" = "uniqueDonors",
@@ -40,6 +42,7 @@ ui <- navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential
                  ),
                  
                  tabPanel("Graduate School Analysis", 
+                          p("Select from the following plots to see how employees of Harvard's graduate schools donate to 2020 presidential campaigns."),
                           selectInput("plot2", label = h5("Select Plot"), 
                                       choices = list("Total Donations" = "gradSchoolTotalDonations",
                                                      "Mean Donations" = "gradSchoolMeanDonations",
@@ -55,6 +58,7 @@ ui <- navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential
                  ),
                  
                  tabPanel("Professorship and Ideology Analysis",
+                          p("Select from the following plots to see how factors such as whether the donor is a professor or the ideology of a candidate affect the size of their donations."),
                           selectInput("plot3", label = h5("Select Plot"), 
                                       choices = list("Professorship Regression" = "profRegress",
                                                      "Ideology Regression" = "ideologyRegress",
@@ -68,6 +72,7 @@ ui <- navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential
                  ),
                  
                  tabPanel("General Population Comparison",
+                          p("Select from the following plots to see how Harvard donations compare to the overall donations to presidential campaigns."),
                           selectInput("plot4", label = h5("Select Plot"), 
                                       choices = list("Donation Size to Campaign Amount" = "donationSizeToTotalSize",
                                                      "Number of Donors to Campaign Amount" = "numDonorsToTotalSize"), 
@@ -77,7 +82,7 @@ ui <- navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential
                                       width = '400px',
                                       size = 1),
                           plotOutput("generalPop")
-                 )
+                 ))
 )
 
 
@@ -255,7 +260,7 @@ server <- function(input, output) {
   
   output$profIdeoAnalysis <- renderPlot({
     
-    if(input$plot3 == "ideoRegress") {     
+    if(input$plot3 == "ideologyRegress") {     
       
       lm(data = data, contribution_receipt_amount ~ estimate)
       
@@ -267,7 +272,7 @@ server <- function(input, output) {
              x = "Estimated Political Ideology",
              y = "Donation Amount")
       
-    } else if(input$plot3 == "ideologyRegress") {
+    } else if(input$plot3 == "profRegress") {
       
       lm(data = data, contribution_receipt_amount ~ professor)
       
