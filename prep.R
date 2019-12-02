@@ -139,7 +139,7 @@ data <- data %>%
 # Reading in ideological scores that include estimates for candidates who don't
 # have a score in the other dataset
 
-ideologies_estimates <- read_xlsx("ideology_score_estimates.xlsx") %>%
+ideologies_estimates <- read_csv("ideology_score_estimates.csv") %>%
   select(Name, guesstimate)
 
 # Merging to main dataset

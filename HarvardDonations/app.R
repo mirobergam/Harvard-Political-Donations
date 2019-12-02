@@ -34,12 +34,13 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                  
                  tabPanel("About the Author",
                           h1("Miroslav Bergam"),
-                          p("I'm from New Jersey and I'm currently a freshman at Harvard College. I'm interested in data science, government, and the humanities.")
+                          p("I'm from New Jersey and I'm currently a freshman at Harvard College. I'm interested in data science, government, and the humanities."),
+                          p("Github: https://github.com/mirobergam")
                  ),
                  
                 # General donation information graphs
                 
-                 tabPanel("Donation Information",
+                 tabPanel("Donation Analysis",
                           p("Select from the following plots to see how individuals employed by Harvard donate to 2020 presidential campaigns."),
                           
                           # Drop-down menu for the different graphs, linked to r chunks in the server
@@ -58,7 +59,11 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                           
                           # donationInfo is the server's name for the selected chart
                           
-                          plotOutput("donationInfo")
+                          plotOutput("donationInfo"),
+                          h3("Conclusions"),
+                          p("There are a few different ways to analyze who has the most support from Harvard donors, but all three of the primary measures (number of donations, number of donors, and total donation sum) show Elizabeth Warren recieving the most support."),
+                          p("The 'Number of Donations' graph displays the number of individual donations without taking into account the fact that a singular donor could be responsible for many different donations. When the data is graphed this way, Joe Biden and Kamala Harris switch 4th and 5th place, while Buttigieg overtakes Sanders for 2nd place. This implies that Harris and Sanders have fewer number of donors in the target demographic donating more times than Biden and Buttigieg have, respectively."),
+                          p("Despite not being a frontrunner nationwide, Seth Moulton hovers around the top five in each of these graphics. This along with Elizabeth Warren and Pete Buttigieg leading the pack suggests that individuals with ties to Harvard are more likely to donate to candidates who attended or worked at Harvard (Moulton received a Bachelor’s in physics from Harvard College and later attended a dual-degree program with the Kennedy and Business schools).")
                  ),
                  
                 
@@ -82,20 +87,24 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                           
                           # gradSchoolInfo is the server's name for the selected chart
                           
-                          plotOutput("gradSchoolInfo")
-                          
+                          plotOutput("gradSchoolInfo"),
+                          h3("Conclusions"),
+                          p("When looking at the aggregate dollars the donors from each school raised, the Business School leads, followed by the Law School and the Kennedy School."),
+                          p("If we look at the average donation size between the different graduate schools, the Kennedy School and Business School swap places. The Kennedy School donates the largest amounts on average."),
+                          p("The faceted bar charts and alluvium graph visualize which candidates the graduate school support is concentrated in.")
                  ),
                  
                 # Educator and Ideological analysis graphs
                 
-                 tabPanel("Professorship and Ideology Analysis",
-                          p("Select from the following plots to see how factors such as whether the donor is a professor or the ideology of a candidate affect the size of their donations."),
+                 tabPanel("Variable Analysis",
+                          p("Select from the following plots to see how factors such as whether the donor is an educator or the ideology of a candidate affect the size of their donations."),
                           
                           # Drop-down menu for the different graphs, linked to r chunks in the server
                           
                           selectInput("plot3", label = h5("Select Plot"), 
-                                      choices = list("Professorship Regression" = "profRegress",
+                                      choices = list("Educator Regression" = "profRegress",
                                                      "Ideology Regression" = "ideologyRegress",
+                                                     "Ideology Regression (with estimates)" = "ideologyEstimateRegress",
                                                      "Coefficient Plot" = "coefPlot"), 
                                       selected = "coefPlot",
                                       multiple = FALSE,
@@ -105,7 +114,12 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                           
                           # profIdeoAnalysis is the server's name for the selected chart
                           
-                          plotOutput("profIdeoAnalysis")
+                          plotOutput("profIdeoAnalysis"),
+                          h3("Conclusions"),
+                          p("There is a positive correlation between being an educator (meaning, they have a occupation listed as 'faculty', 'teacher','educator', or 'professor') and the size of the donation."),
+                          p("There is also a positive correlation between ideology score and donation size. The ideology scores range from -7 to 7, with 7 being more conservative. Therefore, more conservative candidates typically bring in larger donations. Note that the 'Ideology Regression' without estimates lacks ideology scores on Buttigieg, Biden, Yang, Steyer, and others, as the study did not have values for them."),
+                          p("I added my own ideology scores for the candidates who lacked one (Biden, Buttigieg, Yang, Steyer) based on their current campaign platforms, relative to the existing scores. Because they are estimations, this graphic should be taken with a grain of salt. That said, the positive correlation still exists and is in fact stronger."),
+                          p("The coefficient plot demonstrates that, when holding constant the candidate's political ideology, educators are expected to donate almost $200 more than non-educators. When holding constant occupation, there is around a $50 increase expected with each additional point in the conservative direction of ideology score. When both of these variables are held constant, the intercept says that donations are expected to be around $300.")
                  ),
                 
                 # General population donation comparison graphs
@@ -126,8 +140,20 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                           
                           # donationInfo is the server's name for the general population chart
                           
-                          plotOutput("generalPop")
-                 ))
+                          plotOutput("generalPop"),
+                          h3("Conclusions"),
+                          p("There is a negative correlation between overall campaign size (the donations it has accrued since inception) and the donation size of Harvard employees. In other words, candidates with smaller campaigns recieve larger donations from Harvard-employed individuals. This is consistent with John Delaney, Michael Benett, and Steve Bullock having the first, third, and fifth largest mean donations."),
+                          p("There is a positive correlation between overall campaign size and the number of Harvard-employed donors. This is intuitive: the more popular a campaign is, the more donation it likely recieves from any community, including Harvard.")
+                 ),
+                
+                tabPanel("Summary",
+                         h3("General Findings"),
+                         p("This project looks to analyze how individuals employed by Harvard University donate their political dollars. I visualize in multiple different ways the size of the donations, the support different candidates recieve, and how political ideology impacts donations. I also look at how these donations differ within the graduate schools and how all of the donations compare to the general population's donations."),
+                         p("I accessed data on the political donations of individuals employed by Harvard University on the website of the Federal Election Committee, which releases information on every donation made to a presidential, senate, or house political campaign, including the name of the donor, their occupation, their employer, the donated amount, their state, and the recipient campaign."),
+                         p("Although this data was easily accessible by downloading a csv file, there was much data cleaning to be done to ensure that my analyses are accurate. First, I only observed donations made to 2020 presidential campaigns, excluding senate and house donations. Second, I filtered for donations made after January 1st, 2017, as there was no presidential donations to 2020 campaigns in 2016 or earlier. Third, I had to parse through the contributor employer data and filter out donations whose donors were not actually employed by Harvard University. For example, the donations from the employees of Harvard-Westlake School were present in the data, as they contain the word “Harvard.” Donations like this were removed."),
+                         p("I also used the Federal Election Committee website to find data on the campaign donations of the general population, the total campaign sizes, and the political party affiliations of the different committees."),
+                         p("Additionally, I sourced data from a DataForProgress.org article, which offered ideology scores for 2020 candidates who served in Congress. The specific data was not publicly availible, and I had to reach out to the article author to access it.")
+                ))
 )
 
 
@@ -433,7 +459,23 @@ server <- function(input, output) {
              x = "Estimated Political Ideology",
              y = "Donation Amount")
       
-    } else if(input$plot3 == "profRegress") {
+    } 
+    
+    else if(input$plot3 == "ideologyEstimateRegress") {     
+      
+      # Plotting the ideological estimates against the donation size and fitting
+      # a linear model to it using geom_smooth This includes estimations for the
+      # missing ideology scores (Biden, Buttigieg, Yang, Steyer)
+      
+      ggplot(data, aes(x = guesstimate, y = contribution_receipt_amount))+
+        scale_y_log10()+
+        geom_jitter() + 
+        geom_smooth(method = "lm") +
+        labs(title = "Relationship Between Donation Size and Politican Ideology",
+             x = "Estimated Political Ideology",
+             y = "Donation Amount")
+      
+    }else if(input$plot3 == "profRegress") {
       
       # Linear model of education occupation explaining contribution size
       #lm(data = data, contribution_receipt_amount ~ professor)
