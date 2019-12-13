@@ -1,3 +1,5 @@
+# Importing relevant libraries
+
 library(tidyverse)
 library(ggplot2)
 library(formattable)
@@ -5,6 +7,8 @@ library(ggalluvial)
 library(shiny)
 library(shinythemes)
 library(coefplot)
+library("htmltools")
+library("vembedr")
 
 data <- read_rds("clean_data.rds")
 by_employer <- read_rds("employer_clean_data.rds")
@@ -16,27 +20,6 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                 # Main page title
                 
                  navbarPage("Donations of Harvard-Employed Individuals to 2020 Presidential Campaigns",
-                 
-                # About the project
-                
-                 tabPanel("About the Project",
-                          
-                          # Project description
-                          
-                          p("This project looks to analyze how individuals employed by Harvard University donate their political dollars. I visualize in multiple different ways the size of the donations, the support different candidates recieve, and how political ideology impacts donations. I also look at how these donations differ within the graduate schools and how all of the donations compare to the general population's donations."),
-                          p("I accessed data on the political donations of individuals employed by Harvard University on the website of the Federal Election Committee, which releases information on every donation made to a presidential, senate, or house political campaign, including the name of the donor, their occupation, their employer, the donated amount, their state, and the recipient campaign."),
-                          p("Although this data was easily accessible by downloading a csv file, there was much data cleaning to be done to ensure that my analyses are accurate. First, I only observed donations made to 2020 presidential campaigns, excluding senate and house donations. Second, I filtered for donations made after January 1st, 2017, as there was no presidential donations to 2020 campaigns in 2016 or earlier. Third, I had to parse through the contributor employer data and filter out donations whose donors were not actually employed by Harvard University. For example, the donations from the employees of Harvard-Westlake School were present in the data, as they contain the word “Harvard.” Donations like this were removed."),
-                          p("I also used the Federal Election Committee website to find data on the campaign donations of the general population, the total campaign sizes, and the political party affiliations of the different committees."),
-                          p("Additionally, I sourced data from a DataForProgress.org article, which offered ideology scores for 2020 candidates who served in Congress. The specific data was not publicly availible, and I had to reach out to the article author to access it.")
-                 ),
-                
-                # About the author
-                 
-                 tabPanel("About the Author",
-                          h1("Miroslav Bergam"),
-                          p("I'm from New Jersey and I'm currently a freshman at Harvard College. I'm interested in data science, government, and the humanities."),
-                          p("Github: https://github.com/mirobergam")
-                 ),
                  
                 # General donation information graphs
                 
@@ -61,7 +44,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                           
                           plotOutput("donationInfo"),
                           h3("Conclusions"),
-                          p("There are a few different ways to analyze who has the most support from Harvard donors, but all three of the primary measures (number of donations, number of donors, and total donation sum) show Elizabeth Warren recieving the most support."),
+                          p("There are a few different ways to analyze who has the most support from Harvard donors, but all three of the primary measures (number of donations, number of donors, and total donation sum) show Elizabeth Warren receiving the most support."),
                           p("The 'Number of Donations' graph displays the number of individual donations without taking into account the fact that a singular donor could be responsible for many different donations. When the data is graphed this way, Joe Biden and Kamala Harris switch 4th and 5th place, while Buttigieg overtakes Sanders for 2nd place. This implies that Harris and Sanders have fewer number of donors in the target demographic donating more times than Biden and Buttigieg have, respectively."),
                           p("Despite not being a frontrunner nationwide, Seth Moulton hovers around the top five in each of these graphics. This along with Elizabeth Warren and Pete Buttigieg leading the pack suggests that individuals with ties to Harvard are more likely to donate to candidates who attended or worked at Harvard (Moulton received a Bachelor’s in physics from Harvard College and later attended a dual-degree program with the Kennedy and Business schools).")
                  ),
@@ -142,17 +125,46 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                           
                           plotOutput("generalPop"),
                           h3("Conclusions"),
-                          p("There is a negative correlation between overall campaign size (the donations it has accrued since inception) and the donation size of Harvard employees. In other words, candidates with smaller campaigns recieve larger donations from Harvard-employed individuals. This is consistent with John Delaney, Michael Benett, and Steve Bullock having the first, third, and fifth largest mean donations."),
-                          p("There is a positive correlation between overall campaign size and the number of Harvard-employed donors. This is intuitive: the more popular a campaign is, the more donation it likely recieves from any community, including Harvard.")
+                          p("There is a negative correlation between overall campaign size (the donations it has accrued since inception) and the donation size of Harvard employees. In other words, candidates with smaller campaigns receive larger donations from Harvard-employed individuals. This is consistent with John Delaney, Michael Benett, and Steve Bullock having the first, third, and fifth largest mean donations."),
+                          p("There is a positive correlation between overall campaign size and the number of Harvard-employed donors. This is intuitive: the more popular a campaign is, the more donation it likely receives from any community, including Harvard.")
                  ),
                 
                 tabPanel("Summary",
                          h3("General Findings"),
                          p("Elizabeth Warren, by most measures, has the most support from Harvard-employed donors. Candidates who attended Harvard have disproportionate support within the Harvard community."),
                          p("HBS employees donate the most money to political campaigns, but HKS employees the largest amounts on average."),
-                         p("Educators employed by Harvard donate higher amounts than non-educators employed by Harvard. More conservative candidates generally recieve larger donations."),
-                         p("Less popular candidates recieve larger donations from Harvard-employed donors, while more popular candidates have more individual donors.")
+                         p("Educators employed by Harvard donate higher amounts than non-educators employed by Harvard. More conservative candidates generally receive larger donations."),
+                         p("Less popular candidates receive larger donations from Harvard-employed donors, while more popular candidates have more individual donors.")
                          
+                ),
+                # About the project
+                
+                tabPanel("About the Project",
+                         
+                         embed_url("https://www.youtube.com/watch?v=U7Cltkc0jik"),
+                         
+                         # Hyperlinking PDF
+                         
+                         p(a("PDF Version of Project", href = "https://miroslav-bergam.shinyapps.io/HarvardDonations/HarvardDonations.pdf")),
+                         
+                         # Project description
+                         
+                         p("This project looks to analyze how individuals employed by Harvard University donate their political dollars to 2020 presidential campaigns. I visualize in multiple different ways the size of the donations, the support different candidates receive, and how political ideology impacts donations. I also look at how these donations differ within the graduate schools and how all of the donations compare to the general population's donations."),
+                         p("I accessed data on the political donations of individuals employed by Harvard University on the website of the Federal Election Committee, which releases information on every donation made to a presidential, senate, or house political campaign, including the name of the donor, their occupation, their employer, the donated amount, their state, and the recipient campaign."),
+                         p("Although this data was easily accessible by downloading a csv file, there was much data cleaning to be done to ensure that my analyses are accurate. First, I only observed donations made to 2020 presidential campaigns, excluding senate and house donations. Second, I filtered for donations made after January 1st, 2017, as there was no presidential donations to 2020 campaigns in 2016 or earlier. Third, I had to parse through the contributor employer data and filter out donations whose donors were not actually employed by Harvard University. For example, the donations from the employees of Harvard-Westlake School were present in the data, as they contain the word “Harvard.” Donations like this were removed."),
+                         p("I also used the Federal Election Committee website to find data on the campaign donations of the general population, the total campaign sizes, and the political party affiliations of the different committees."),
+                         p("Additionally, I sourced data from a DataForProgress.org article, which offered ideology scores for 2020 candidates who served in Congress. The specific data was not publicly availible, and I had to reach out to the article author to access it.")
+                ),
+                
+                # About the author
+                
+                tabPanel("About the Author",
+                         h1("Miroslav Bergam"),
+                         p("I'm from New Jersey and I'm currently a freshman at Harvard College. I'm interested in data science, government, and the humanities."),
+                         p("Email: mbergam@college.harvard.edu"),
+                         # Hyperlinking github
+                         
+                         a("Github", href = "https://github.com/mirobergam")
                 ))
 )
 

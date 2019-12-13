@@ -11,7 +11,7 @@ dir.create("clean-data")
 # Reading in the FEC data on presidential campaign donations from individuals
 # with an employer listed as "harvard" from 2017 to present
 
-data <- read_csv("presdonors.csv") %>%
+data <- read_csv("raw-data/presdonors.csv") %>%
   
   # Selecting relevant variables
   
@@ -88,7 +88,7 @@ data <- read_csv("presdonors.csv") %>%
 # Reading in data on presidential candidates, which includes their political
 # party and the current size of their campaigns in donation money
 
-pres <- read_csv("pres.csv") %>%
+pres <- read_csv("raw-data/pres.csv") %>%
   
   # Renaming them to join with the main dataset later
   
@@ -128,7 +128,7 @@ data <- data %>%
 
 # Reading in list of ideological scores for the candidates
 
-ideologies <- read_csv("ideology_score.csv") %>%
+ideologies <- read_csv("raw-data/ideology_score.csv") %>%
   select(Name, estimate)
 
 # Merging ideological scores to main dataset
@@ -139,7 +139,7 @@ data <- data %>%
 # Reading in ideological scores that include estimates for candidates who don't
 # have a score in the other dataset
 
-ideologies_estimates <- read_csv("ideology_score_estimates.csv") %>%
+ideologies_estimates <- read_csv("raw-data/ideology_score_estimates.csv") %>%
   select(Name, guesstimate)
 
 # Merging to main dataset
